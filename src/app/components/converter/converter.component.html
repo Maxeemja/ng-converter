@@ -2,17 +2,26 @@
   <div class="container">
     <form class="converter">
       <div class="column">
-        <input type="number" [(ngModel)]="firstInput" name="first">
-        <select name="1">
+        <input type="number"
+               [(ngModel)]="firstInput"
+               name="first"
+               (ngModelChange)="handleInputChange( 'first')"
+               class="input"
+        >
+        <select name="1" [(ngModel)]="firstSelect" (ngModelChange)="handleSelectChange()"  class="select">
           <option value="USD">USD</option>
           <option value="EUR">EUR</option>
           <option value="UAH">UAH</option>
         </select>
-        <div>{{firstInput}}</div>
       </div>
       <div class="column">
-        <input type="number" [(ngModel)]="secondInput" name="second">
-        <select name="2">
+        <input type="number"
+               [(ngModel)]="secondInput"
+               name="second"
+               (ngModelChange)="handleInputChange( 'second')"
+               class="input"
+        >
+        <select name="2" [(ngModel)]="secondSelect" (ngModelChange)="handleSelectChange()" class="select">
           <option value="EUR">EUR</option>
           <option value="USD">USD</option>
           <option value="UAH">UAH</option>

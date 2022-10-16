@@ -10,7 +10,9 @@ import {CurrencyService} from "./services/currency.service";
 export class AppComponent {
   title = 'tech-task';
 
-  constructor(private service: CurrencyService) {}
+  constructor(private service: CurrencyService) {
+  }
+
   ngOnInit(): void {
     this.service.getCurrencies()
   }
