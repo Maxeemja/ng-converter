@@ -1,29 +1,51 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
-import {BehaviorSubject, map, Subscription, tap, toArray} from "rxjs";
+import {
+  BehaviorSubject,
+  filter,
+  from,
+  map, Observable,
+  of,
+  Subscription,
+  switchMap,
+  take,
+  takeUntil,
+  takeWhile,
+  tap,
+  toArray
+} from "rxjs";
 import {Currency} from "../interfaces/currency.interface";
+
+interface Rates {
+  [cc: string]: number
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class CurrencyService {
   BASE_URL = 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json';
-  data$: BehaviorSubject<Currency[]> = new BehaviorSubject<Currency[]>([])
   USD_RATE: number = 0;
   EUR_RATE: number = 0;
 
-
+  rates: Rates = {};
+  rates$: BehaviorSubject<Rates> = new BehaviorSubject<Rates>({})
   constructor(private http: HttpClient) {
   }
 
-  getCurrencies() : Subscription {
-    return this.http.get<Currency[]>(this.BASE_URL).pipe(
-      map((data: Currency[]) => data.filter(currency => currency.cc == 'EUR' || currency.cc == 'USD')),
-      tap((data: Currency[]) => {
-        this.EUR_RATE = data[1].rate;
-        this.USD_RATE = data[0].rate;
-      }),
-    ).subscribe((data) => this.data$.next(data))
+  getCurrencies(): void{
+    this.http.get<Currency[]>(this.BASE_URL).pipe(
+      tap(data => {
+        data.map(currency => {
+          this.rates[`${currency.cc}`] = currency.rate;
+        })
+        this.EUR_RATE = this.rates['EUR'];
+        this.USD_RATE = this.rates['USD'];
+      })
+    )
+    .subscribe((_) => {
+      this.rates$.next(this.rates)
+    })
   }
 
   convert(firstValue: number, firstCurrency: string, secCurrency: string): number {

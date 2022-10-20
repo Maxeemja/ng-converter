@@ -10,7 +10,8 @@ import {BehaviorSubject, Observable} from "rxjs";
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent{
-  data$: Observable<Currency[]> = this.service.data$;
-  constructor(private service: CurrencyService) { }
+  rates$ = this.service.rates$;
+  constructor(private service: CurrencyService) {
+  }
 
 }

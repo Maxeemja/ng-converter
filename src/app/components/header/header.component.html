@@ -1,12 +1,13 @@
 <header class="header">
     <div class="container">
-      <ng-container *ngFor="let currency of data$ | async; first as isFirst ">
+      <ng-container *ngIf="rates$ | async as rates">
         <div class="header-rate">
-          {{currency.cc}} = {{currency.rate}} UAH
+          1 USD = {{rates['USD']}} UAH
         </div>
-        <span *ngIf="isFirst">/</span>
+        <span>/</span>
+        <div class="header-rate">
+          1 EUR = {{rates['EUR']}} UAH
+        </div>
       </ng-container>
-
-
     </div>
 </header>
