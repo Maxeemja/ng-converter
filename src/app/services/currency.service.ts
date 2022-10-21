@@ -2,22 +2,19 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {
   BehaviorSubject,
-  filter,
-  from,
-  map, Observable,
-  of,
-  Subscription,
-  switchMap,
-  take,
-  takeUntil,
-  takeWhile,
-  tap,
-  toArray
+  map,
+  tap
 } from "rxjs";
 import {Currency} from "../interfaces/currency.interface";
+import {Rates} from "../interfaces/rates.interface";
+import {Form, FormGroup} from "@angular/forms";
+import {emit} from "cluster";
 
-interface Rates {
-  [cc: string]: number
+interface Values {
+  firstValue: number,
+  secValue: number,
+  firstCurrency: string,
+  secCurrency: string
 }
 
 @Injectable({
@@ -25,16 +22,21 @@ interface Rates {
 })
 export class CurrencyService {
   BASE_URL = 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json';
-  USD_RATE: number = 0;
-  EUR_RATE: number = 0;
+  USD_RATE!: number;
+  EUR_RATE!: number;
 
   rates: Rates = {};
+  data$: BehaviorSubject<Currency[]> = new BehaviorSubject<Currency[]>([])
   rates$: BehaviorSubject<Rates> = new BehaviorSubject<Rates>({})
+
   constructor(private http: HttpClient) {
   }
 
-  getCurrencies(): void{
+  getCurrencies(): void {
     this.http.get<Currency[]>(this.BASE_URL).pipe(
+      map(data => {
+        return [{cc: 'UAH', rate: 1}, ...data]
+      }),
       tap(data => {
         data.map(currency => {
           this.rates[`${currency.cc}`] = currency.rate;
@@ -43,30 +45,9 @@ export class CurrencyService {
         this.USD_RATE = this.rates['USD'];
       })
     )
-    .subscribe((_) => {
-      this.rates$.next(this.rates)
-    })
+      .subscribe((data) => {
+        this.data$.next(data);
+        this.rates$.next(this.rates);
+      })
   }
-
-  convert(firstValue: number, firstCurrency: string, secCurrency: string): number {
-    let result = 0;
-    if(firstCurrency === secCurrency) return firstValue;
-    switch(firstCurrency){
-      case 'UAH':
-        if(secCurrency === 'USD') result = firstValue / this.USD_RATE;
-        else if (secCurrency === 'EUR') result = firstValue / this.EUR_RATE;
-        break;
-      case 'USD':
-        if(secCurrency === 'UAH') result = firstValue * this.USD_RATE;
-        else if (secCurrency === 'EUR') result = firstValue * (this.USD_RATE / this.EUR_RATE);
-        break;
-      case 'EUR':
-        if(secCurrency === 'UAH') result = firstValue * this.EUR_RATE;
-        else if (secCurrency === 'USD') result = firstValue * (this.EUR_RATE / this.USD_RATE);
-        break;
-    }
-    return +result.toFixed(2);
-  }
-
-
 }
